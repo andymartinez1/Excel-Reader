@@ -1,22 +1,24 @@
-﻿using Excel_Reader.Data;
-using Excel_Reader.Models;
+﻿using Excel_Reader.Models;
+using Excel_Reader.Repository;
 using OfficeOpenXml;
-using Spectre.Console;
 
 namespace Excel_Reader.Services;
 
-public class ExcelReaderService
+public class ExcelReaderService : IExcelReaderService
 {
-    private readonly FileReaderDbContext _context;
+    private readonly IExcelReaderRepository<Finances> _repository;
 
-    public ExcelReaderService(FileReaderDbContext context)
+    public ExcelReaderService(IExcelReaderRepository<Finances> repository)
     {
-        _context = context;
+        _repository = repository;
         ExcelPackage.License.SetNonCommercialPersonal("Andrew Martinez");
     }
 
-    public void ConvertExcelData(string excelFilePath)
+    public void ConvertExcelData()
     {
+        var fileName = "Finances.xlsx";
+        var excelFilePath = Path.Combine(Environment.CurrentDirectory, fileName);
+
         using (var excel = new ExcelPackage(excelFilePath))
         {
             var sheet = excel.Workbook.Worksheets[0];
@@ -34,16 +36,13 @@ public class ExcelReaderService
                     Type = sheet.Cells[row, 5].Value.ToString()!,
                 };
 
-                _context.FinancesList.Add(financeData);
+                _repository.AddFinances(financeData);
             }
-
-            _context.SaveChanges();
-            AnsiConsole.MarkupLine("[green]Data saved[/]");
         }
     }
 
     public List<Finances> GetAllData()
     {
-        return _context.FinancesList.ToList();
+        return _repository.GetAllData();
     }
 }

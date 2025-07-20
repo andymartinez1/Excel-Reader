@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Excel_Reader.Migrations
 {
-    [DbContext(typeof(FileReaderDbContext))]
+    [DbContext(typeof(ExcelReaderDbContext))]
     partial class FileReaderDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

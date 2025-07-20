@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Excel_Reader.Data;
 
-public class FileReaderDbContext : DbContext
+public class ExcelReaderDbContext : DbContext
 {
     public DbSet<Finances> FinancesList { get; set; }
 

@@ -1,14 +1,12 @@
-﻿using Excel_Reader.Services;
+﻿using Excel_Reader.Models;
 using Spectre.Console;
 
 namespace Excel_Reader.Views;
 
-public class UserInterface(ExcelReaderService service)
+public class ShowExcelData
 {
-    public void ShowAllExcelData()
+    public static void ShowAllExcelData(List<Finances> sheets)
     {
-        var sheets = service.GetAllData();
-
         var table = new Table();
         table.AddColumn("Id");
         table.AddColumn("Date");
@@ -23,13 +21,11 @@ public class UserInterface(ExcelReaderService service)
                 sheet.Date.ToString("g"),
                 sheet.Description,
                 sheet.Category,
-                sheet.Amount.ToString("0.##"),
+                sheet.Amount.ToString("$0.##"),
                 sheet.Type
             );
 
         table.Expand();
         AnsiConsole.Write(table);
-        AnsiConsole.MarkupLine("[blue]Press any key to exit...[/]");
-        Console.ReadKey(true);
     }
 }
