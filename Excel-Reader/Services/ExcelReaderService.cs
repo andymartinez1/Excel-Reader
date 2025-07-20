@@ -1,47 +1,49 @@
-﻿using Excel_Reader.Models;
+﻿using Excel_Reader.Data;
+using Excel_Reader.Models;
 using OfficeOpenXml;
+using Spectre.Console;
 
 namespace Excel_Reader.Services;
 
 public class ExcelReaderService
 {
-    public void GetExcelData()
-    {
-        var filePath = @"X:\C#\.NET-Console-Apps\Excel-Reader\Excel-Reader\Finances.xls";
+    private readonly FileReaderDbContext _context;
 
-        using (var excel = new ExcelPackage(new FileInfo(filePath)))
+    public ExcelReaderService(FileReaderDbContext context)
+    {
+        _context = context;
+        ExcelPackage.License.SetNonCommercialPersonal("Andrew Martinez");
+    }
+
+    public void ConvertExcelData(string excelFilePath)
+    {
+        using (var excel = new ExcelPackage(excelFilePath))
         {
-            ExcelPackage.License.SetNonCommercialPersonal("Test");
-            var sheet = excel.Workbook.Worksheets["Finance"];
-            GetExcelDataList<ExcelData>(sheet);
+            var sheet = excel.Workbook.Worksheets[0];
+
+            var rowCount = sheet.Dimension.End.Row;
+
+            for (var row = 2; row <= rowCount; row++)
+            {
+                var financeData = new Finances
+                {
+                    Date = DateTime.Parse(sheet.Cells[row, 1].Value.ToString()!),
+                    Description = sheet.Cells[row, 2].Value.ToString()!,
+                    Category = sheet.Cells[row, 3].Value.ToString()!,
+                    Amount = double.Parse(sheet.Cells[row, 4].Value.ToString()!),
+                    Type = sheet.Cells[row, 5].Value.ToString()!,
+                };
+
+                _context.FinancesList.Add(financeData);
+            }
+
+            _context.SaveChanges();
+            AnsiConsole.MarkupLine("[green]Data saved[/]");
         }
     }
 
-    public List<T> GetExcelDataList<T>(ExcelWorksheet sheet)
-        where T : class
+    public List<Finances> GetAllData()
     {
-        var excelDataList = new List<T>();
-
-        // Getting column headers
-        var columnInfo = Enumerable
-            .Range(1, sheet.Dimension.Columns)
-            .ToList()
-            .Select(n => new { Index = n, ColumnName = sheet.Cells[1, n].Value.ToString() });
-
-        for (var row = 2; row < sheet.Dimension.Rows; row++)
-        {
-            var obj = Activator.CreateInstance<T>();
-            foreach (var prop in typeof(T).GetProperties())
-            {
-                var col = columnInfo.SingleOrDefault(c => c.ColumnName == prop.Name).Index;
-                var value = sheet.Cells[row, col].Value.ToString();
-                var propType = prop.PropertyType;
-                prop.SetValue(obj, Convert.ChangeType(value, propType));
-            }
-
-            excelDataList.Add(obj);
-        }
-
-        return excelDataList;
+        return _context.FinancesList.ToList();
     }
 }

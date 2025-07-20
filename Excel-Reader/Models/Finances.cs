@@ -2,7 +2,7 @@
 
 namespace Excel_Reader.Models;
 
-public class ExcelData
+public class Finances
 {
     [Key]
     public int Id { get; set; }
@@ -13,13 +13,7 @@ public class ExcelData
 
     public string Category { get; set; } = string.Empty;
 
-    public int Amount { get; set; }
+    public double Amount { get; set; }
 
-    public FinanceType Type { get; set; }
-}
-
-public enum FinanceType
-{
-    Income,
-    Expense,
+    public string Type { get; set; } = string.Empty;
 }
